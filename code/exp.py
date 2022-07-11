@@ -166,7 +166,7 @@ class Simulation:
                             t_span = (tstart, tend), y0 = y0,
                             args=(mode, d, vir_model), **kwargs,
                             method = 'LSODA',
-                            max_step = 0.1)
+                            max_step = 0.01)
 
             # append all simulation data except for the last time step because this will be included in next simulation
             ts.append(sol.t[:-1])

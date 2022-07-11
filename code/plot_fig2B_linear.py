@@ -23,7 +23,7 @@ pscan = pscan.loc[pscan["name"] != "Null"]
 
 g = sns.relplot(data = pscan, x = "p_val", y = "norm2", col = "name", hue = "readout",
                 kind = "line", facet_kws = {"despine" : False})
-g.set(ylim = (-5,5), xlabel = "divisions per day",
+g.set(ylim = (-1,10), xlabel = "divisions per day",
       ylabel = "effect size")
 
 g.set_titles("{col_name}")

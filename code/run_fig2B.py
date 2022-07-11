@@ -19,7 +19,7 @@ import os
 print(os.getcwd())
 # for carrying capacacity I need a long long timecourse
 # because the peak comes so late
-time_long = [(0,500)]
+time_long = [(0,1500)]
 time_null = [(0,20)]
 
 # for timer and IL2 timecourse needs to be a bit longer
