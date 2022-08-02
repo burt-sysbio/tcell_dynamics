@@ -80,11 +80,10 @@ class Simulation:
         # init myc concentration
         y0[-2] = 1. # this should matter only for the first cell population at t0, other naive cells are not initialized yet and timer is reset
         y0[-3] = 1 # carrying capacity!
-        y0[-4] = 1
+        y0[-4] = self.parameters["il2_stimulation"]
         # multiply y0 as often as there are stimulations
         #y0_tile = np.tile(y0, len(self.start_times))
         #y0_tile = np.tile(y0, 1) # the tile was only used the naive cells were restimulated, now I stimulate effector cells to produce IL2
-
 
         # add a global IL2 concentration at the end
         il2_global_init = 6e7

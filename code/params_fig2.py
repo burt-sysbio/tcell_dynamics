@@ -26,5 +26,6 @@ d = {
     "n_crit" : 1e3,
     "ag_dose" : 0,
     "deg_restim" : 1,
+    "il2_stimulation" : 1,
     }
 

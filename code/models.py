@@ -31,7 +31,8 @@ def repeated_stimulation(time, state, model, d, vir_model):
     #ag_effective = (ag**3 / (ag**3 + 1)) * d["rate_il2_prec"] * n_eff * 0.01
 
     if (model.__name__ == "restim") | (model.__name__ == "restim_timer_il2"):
-        il2_production = d["rate_il2_naive"] * n_naive + d["rate_il2_prec"] * n_prec + d["rate_il2_prec"] * n_eff * restim * 0.01
+        restim_effective = restim**3 / (restim**3 + 1)
+        il2_production = d["rate_il2_naive"] * n_naive + d["rate_il2_prec"] * n_prec + d["rate_il2_prec"] * n_eff * restim_effective * 0.01
         # np exp(-1*time) is explicit timer for restimulation
     else:
         il2_production = d["rate_il2_naive"] * n_naive + d["rate_il2_prec"] * n_prec # (n_naive+n_prec) #+ ag_effective
