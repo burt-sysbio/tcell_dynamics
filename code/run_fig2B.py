@@ -39,7 +39,7 @@ sim3 = Simulation(name="IL2", mode=model.il2_prolif, parameters=d, start_times=t
 sim4 = Simulation(name="Timer", mode=model.timer_prolif, parameters=d, start_times=time_timer, vir_model= vir_model_const)
 
 sim_il2 = [sim1, sim2, sim3, sim4]
-  
+
 # =============================================================================
 # make parameter scan
 # =============================================================================
@@ -58,7 +58,7 @@ elif sname == "log":
     arr_smooth = np.linspace(1.5,3,50)
     arr = np.sort(np.concatenate((arr,arr_smooth)))
 
-pscan = exp2.pscan(pnames = pnames, arr = arr, n = len(arr), normtype= "first")
+pscan = exp2.pscan(pnames = pnames, arr = arr, n = len(arr), normtype= "first", max_step = 0.01)
 
 ### store output
 pscan.to_csv("../output/output_fig2B_data_estimates_" + sname + ".csv", index = False)

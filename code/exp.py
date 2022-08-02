@@ -59,6 +59,7 @@ class Simulation:
         self.name = name
         self.mode = mode
         self.parameters = dict(parameters)
+        self.default_params = dict(parameters)
         self.time = None
         self.state = None
         self.cells = None
@@ -67,6 +68,7 @@ class Simulation:
         self.mol_arr = None
         self.start_times = start_times
         self.vir_model = vir_model
+
         
     def init_model(self):
         """
@@ -92,11 +94,11 @@ class Simulation:
         return y0
     
     
-    def compute_cellstates(self):
+    def compute_cellstates(self, **kwargs):
         """
         summarize effector cells and naive cells
         """
-        self.run_model()
+        self.run_model(**kwargs)
         cell_arr = self.cell_arr
         mol_arr = self.mol_arr
         assert cell_arr is not None
@@ -145,7 +147,7 @@ class Simulation:
         needs parameters that indicate different starting times...
         return: should return same as run_model function
         """
-        print("running model...")
+        print("running model without max step size set, change this for readout functions etc")
         start_times = self.start_times
 
         y0 = self.init_model()
@@ -165,8 +167,7 @@ class Simulation:
             sol = solve_ivp(fun = model.repeated_stimulation,
                             t_span = (tstart, tend), y0 = y0,
                             args=(mode, d, vir_model), **kwargs,
-                            method = 'LSODA',
-                            max_step = 0.01)
+                            method = 'LSODA')
 
             # append all simulation data except for the last time step because this will be included in next simulation
             ts.append(sol.t[:-1])
@@ -248,8 +249,8 @@ class Simulation:
         return reads_df
 
             
-    def vary_param(self, pname, arr, normtype = "first"):
-        old_parameters = dict(self.parameters)
+    def vary_param(self, pname, arr, normtype = "first", normalize = True, **kwargs):
+
         readout_list = []
         edge_names = ["alpha", "alpha_p"]
 
@@ -265,14 +266,17 @@ class Simulation:
                 self.parameters[dummy] = val
                 
             self.parameters[pname] = val
-            self.compute_cellstates()
+            self.compute_cellstates(**kwargs)
             read = self.get_readouts()
 
             read["p_val"] = val
             readout_list.append(read)
 
-        self.parameters = old_parameters      
-        df = self.vary_param_norm(readout_list, arr, edge_names, normtype, pname)        
+            self.reset_params()
+        if normalize:
+            df = self.vary_param_norm(readout_list, arr, edge_names, normtype, pname)
+        else:
+            df = readout_list
         return df
 
 
@@ -301,9 +305,11 @@ class Simulation:
         
         # merge df with normalization df    
         norm = arr[int(len(arr)/2)]
+
+        assert normtype in ["first", "middle"]
         if normtype == "first":
             norm = arr[0]
-        else:
+        elif normtype == "middle":
             # get the value in arr, which is closest to the median
             norm = arr[np.argmin(np.abs(arr-np.median(arr)))]
 
@@ -457,46 +463,85 @@ class Simulation:
 
         return fig
     
-    def gen_lognorm_params(self, pname, std, n = 20): 
+    def gen_lognorm_params(self, pname, std, n = 20):
+        """
+        deprecated use set_params_lognorm
+        """
         mean = self.parameters[pname]
         sigma, scale = lognorm_params(mean, std)
         sample = log_pdf.rvs(sigma, 0, scale, size = n)
         
         return sample
     
+
+    def get_lognorm_array(self, pname, res, CV = 0.1):
+        """
+        generate lognorm array with given CV
+        res: number of parameter values sampled from lognorm
+        mean of lognorm taken from current value of simulation object pname
+
+        """
+        # need to check if tuple was provided, if yes then parameters need to be the same for this analysis!
+
+        myval = self.parameters[pname]
+        assert myval != 0
+        std = myval * CV
+        sigma, scale = lognorm_params(myval, std)
+        sample = log_pdf.rvs(sigma, 0, scale, size=res)
+        return sample
+
+    def set_params_lognorm(self, params : list, CV = 0.1):
+        """
+        take a list of params and shuffle lognorm style
+        """
+        for pname in params:
+            assert pname in self.parameters.keys()
+            sample = self.get_lognorm_array(pname, 1, CV)
+            self.parameters[pname] = sample[0]
+
+
     def draw_new_params(self, param_names, heterogeneity):
+        """
+        deprecated use set_params_lognorm
+        """
         for param in param_names:
             mean = self.parameters[param] 
             std = mean*(heterogeneity/100.)
+            print("watch out, dividing by 100 for some ancient mistaken? reason...")
             sigma, scale = lognorm_params(mean, std)
             sample = log_pdf.rvs(sigma, 0, scale, size = 1)
+            # I only want single float, not array
+            sample = sample[0]
             self.parameters[param] = sample
-# =============================================================================
-# end class
-# =============================================================================
-    
-def gen_arr(sim, pname, scales = (1,1), use_percent = False, n = 30):
-    """
-    scales could be either 1,1 for varying one order of magnitude
-    or 0.9 and 1.1 to vary by 10 %
-    """
-    edge_names = ["alpha", "alpha_1", "alpha_p"]
-    if pname in edge_names:
-        arr = np.arange(2, 20, 2)
-    else:
-        params = sim.parameters
-        val = params[pname]
 
-        if use_percent:
-            val_min = scales[0] * val
-            val_max = scales[1] * val
-            arr = np.linspace(val_min, val_max, n)
+    def reset_params(self):
+        """
+        reset parameters to default state
+        """
+        self.parameters = dict(self.default_params)
+
+    def gen_arr(self, pname, scales = (1,1), use_percent = False, n = 30):
+        """
+        scales could be either 1,1 for varying one order of magnitude
+        or 0.9 and 1.1 to vary by 10 %
+        """
+        edge_names = ["alpha", "alpha_1", "alpha_p"]
+        if pname in edge_names:
+            arr = np.arange(2, 20, 2)
         else:
-            val_min = 10**(-scales[0])*val
-            val_max = 10**scales[1]*val
-            arr = np.geomspace(val_min, val_max, n)
+            params = dict(self.parameters)
+            val = params[pname]
 
-    return arr
+            if use_percent:
+                val_min = scales[0] * val
+                val_max = scales[1] * val
+                arr = np.linspace(val_min, val_max, n)
+            else:
+                val_min = 10**(-scales[0])*val
+                val_max = 10**scales[1]*val
+                arr = np.geomspace(val_min, val_max, n)
+
+        return arr
         
 
 class SimList:
@@ -521,15 +566,15 @@ class SimList:
         return readout_list
 
          
-    def pscan(self, pnames, arr = None, scales = (1,1), n = None, normtype = "first", use_percent = False):
+    def pscan(self, pnames, arr = None, scales = (1,1), n = None, normtype = "first", use_percent = False, **kwargs):
         pscan_list = []
         for sim in self.sim_list:
             for pname in pnames:
                 if arr is None:
                     assert n is not None, "need to specific resolution for pscan array"
-                    arr = gen_arr(sim = sim, pname = pname, scales = scales, n = n, use_percent= use_percent)
+                    arr = sim.gen_arr(pname = pname, scales = scales, n = n, use_percent= use_percent)
 
-                readout_list = sim.vary_param(pname, arr, normtype)
+                readout_list = sim.vary_param(pname, arr, normtype, **kwargs)
                 
                 pscan_list.append(readout_list)
         
@@ -639,5 +684,6 @@ class SimList:
         g.set(xscale = "log")
         
         return g
+
 
 
