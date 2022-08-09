@@ -56,7 +56,7 @@ def run_heterogeneity(sim, CV : float, res : int, pnames : list, sname : str, **
 
     df = pd.concat(cell_list).reset_index()
     df["CV"] = CV
-    df.to_csv("../output/heterogeneity_cv_" + str(CV) + "_" + sim.name + "_" + sname + ".csv", index = False)
+    df.to_csv("../output/heterogeneity/heterogeneity_cv_" + str(CV) + "_" + sim.name + "_" + sname + ".csv", index = False)
 
 
 pnames = ["beta_p"]

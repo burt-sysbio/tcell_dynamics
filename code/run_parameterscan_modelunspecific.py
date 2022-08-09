@@ -38,29 +38,27 @@ sim_carry = Simulation(name="Carry", mode=model.carry_prolif, parameters=d, star
 # make parameter scan
 # =============================================================================
 
-out_list = []
+out_list1 = []
+out_list2 = []
+out_list3 = []
 
-pnames = ["rate_il2_prec", "up_il2", "rate_il2_naive"]
+pnames = ["beta_naive", "beta_prec", "d_eff"]
 max_step = 0.01
 for pname in pnames:
     arr = sim_il2.gen_arr(pname = pname, use_percent = True, scales = (0.9,1.1))
-    out = sim_il2.vary_param(pname = pname, arr = arr, normtype="middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
-    out_list.append(out)
+    out1 = sim_il2.vary_param(pname = pname, arr = arr, normtype="middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
+    out_list1.append(out1)
 
-pname = "deg_myc"
-arr = sim_timer.gen_arr(pname = pname, use_percent = True, scales = (0.9,1.1))
-out1 = sim_timer.vary_param(pname = pname, arr = arr, normtype= "middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
+    out2 = sim_timer.vary_param(pname = pname, arr = arr, normtype="middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
+    out_list2.append(out2)
 
-pname = "n_crit"
-arr = sim_carry.gen_arr(pname = pname, use_percent = True, scales = (0.9,1.1))
-out2 = sim_carry.vary_param(pname = pname, arr = arr, normtype= "middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
+    out3 = sim_carry.vary_param(pname = pname, arr = arr, normtype="middle", t_eval = np.arange(0,80,0.1), max_step = max_step)
+    out_list3.append(out3)
 
+df1 = pd.concat(out_list1).reset_index()
+df2 = pd.concat(out_list2).reset_index()
+df3 = pd.concat(out_list3).reset_index()
 
-out_il2 = pd.concat(out_list).reset_index()
-
-
-out_il2.to_csv("../output/paramscans/pscan_il2_specific.csv", index = False)
-out1.to_csv("../output/paramscans/pscan_timer_specific.csv", index = False)
-out2.to_csv("../output/paramscans/pscan_carry_specific.csv", index = False)
-
-
+df1.to_csv("../output/paramscans/pscan_il2_unspecific.csv", index = False)
+df2.to_csv("../output/paramscans/pscan_timer_unspecific.csv", index = False)
+df3.to_csv("../output/paramscans/pscan_carry_unspecific.csv", index = False)

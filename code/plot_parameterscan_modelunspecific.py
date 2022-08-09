@@ -20,19 +20,21 @@ plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-out_il2 = pd.read_csv("../output/paramscans/pscan_il2_specific.csv")
-out1 = pd.read_csv("../output/paramscans/pscan_timer_specific.csv")
-out2 = pd.read_csv("../output/paramscans/pscan_carry_specific.csv")
+out_il2 = pd.read_csv("../output/paramscans/pscan_il2_unspecific.csv")
+out1 = pd.read_csv("../output/paramscans/pscan_timer_unspecific.csv")
+out2 = pd.read_csv("../output/paramscans/pscan_carry_unspecific.csv")
 
-df = pd.concat([out_il2, out1, out2])
+df = pd.concat([out_il2, out1, out2]).reset_index()
+
 
 ylim = [-1,1]
 ylabel = "effect size"
 xlabel = "param value norm."
-g = sns.relplot(data = df, x = "xnorm", y = "log2FC", hue = "readout", col = "pname", kind = "line", height = 2.1)
+g = sns.relplot(data = df, x = "xnorm", y = "log2FC", hue = "readout", col = "name", row = "pname", kind = "line", height = 2.1)
 g.set(ylim = ylim, ylabel = ylabel, xlabel = xlabel)
 sns.despine(top = False, right = False)
+g.set_titles("{col_name}")
 plt.show()
 
-g.savefig("../figures/supplements/parameterscan_modelspecific.svg")
-g.savefig("../figures/supplements/parameterscan_modelspecific.pdf")
+g.savefig("../figures/supplements/parameterscan_modelunspecific.svg")
+g.savefig("../figures/supplements/parameterscan_modelunspecific.pdf")

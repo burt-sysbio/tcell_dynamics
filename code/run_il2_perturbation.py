@@ -13,9 +13,21 @@ from params_fig2 import d
 import numpy as np
 import pandas as pd
 import seaborn as sns
-sns.set(context = "poster", style ="ticks")
-from scipy.interpolate import interp1d
+
 import matplotlib.pyplot as plt
+import seaborn as sns
+SMALL_SIZE = 8
+MEDIUM_SIZE = 9
+BIGGER_SIZE = 10
+sns.set_palette("deep")
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+from scipy.interpolate import interp1d
 
 d = dict(d)
 d["initial_cells"] = 1
@@ -72,10 +84,20 @@ mols = pd.concat(mol_list).reset_index(drop = True)
 
 cells = cells.loc[cells.species == "CD4_all"]
 
-g = sns.relplot(data = cells, x = "time", y = "value", hue = "param_value", kind = "line")
-g.set(yscale ="log", ylim = [1, None])
+g = sns.relplot(data = cells, x = "time", y = "value", hue = "param_value", kind = "line",
+                height = 2.1, legend = False)
+g.set(yscale ="log", ylim = [1, None], ylabel = "cells", xlabel = "time (h)", xticks = [0,20,40,60,80])
+sns.despine(top = False, right = False)
 plt.show()
 
+g.savefig("../figures/supplements/cells_il2_perturbation.pdf")
+g.savefig("../figures/supplements/cells_il2_perturbation.svg")
+
 g = sns.relplot(data = mols, x = "time", y = "value", hue = "param_value",
-                col = "species", facet_kws = {"sharey" : False}, kind = "line")
+                col = "species", facet_kws = {"sharey" : False}, kind = "line", height = 2.1)
+g.set(xlabel = "time (h)", ylabel = "conc.", xticks = [0,20,40,60,80])
+sns.despine(top = False, right = False)
 plt.show()
+
+g.savefig("../figures/supplements/molecules_il2_perturbation.pdf")
+g.savefig("../figures/supplements/molecules_il2_perturbation.svg")
