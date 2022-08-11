@@ -69,9 +69,10 @@ res = 50
 
 CV_list = [0.01,0.05,0.1,0.5,1.0]
 for CV in CV_list:
-    run_heterogeneity(sim_il2, CV, res, pnames, sname, t_eval=t_eval)
-    run_heterogeneity(sim_timer, CV, res, pnames, sname, t_eval=t_eval)
+    # set max step otherwise dataframes get too large
+    run_heterogeneity(sim_il2, CV, res, pnames, sname, t_eval=t_eval, max_step = np.inf)
+    run_heterogeneity(sim_timer, CV, res, pnames, sname, t_eval=t_eval, max_step = np.inf)
 
-    run_heterogeneity(sim_il2, CV, res, pnames_large, sname_large, t_eval=t_eval)
-    run_heterogeneity(sim_timer, CV, res, pnames_large, sname_large, t_eval=t_eval)
+    run_heterogeneity(sim_il2, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
+    run_heterogeneity(sim_timer, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
 

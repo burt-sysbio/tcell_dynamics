@@ -146,7 +146,10 @@ class Simulation:
         needs parameters that indicate different starting times...
         return: should return same as run_model function
         """
-        print("running model without max step size set, change this for readout functions etc")
+        if "max_step" in kwargs:
+            print("running model with step size " + str(kwargs["max_step"]))
+        else:
+            print("running model, no step size set")
         start_times = self.start_times
 
         y0 = self.init_model()
