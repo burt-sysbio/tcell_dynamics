@@ -11,7 +11,8 @@ import models as model
 from params_fig2 import d
 import pandas as pd
 import numpy as np
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 d = dict(d)
 # =============================================================================
 # make time course
@@ -40,7 +41,20 @@ sim_timer = Simulation(name="Timer", mode=model.timer_prolif, parameters=d, star
 # =============================================================================
 # make parameter scan
 # =============================================================================
+# check if dynamics are similar for default params
+sim_timer.parameters["deg_myc"] = 0.395
 
+cells_il2 = sim_il2.compute_cellstates(t_eval = t_eval, max_step = np.inf)
+cells_timer = sim_timer.compute_cellstates(t_eval = t_eval, max_step = np.inf)
+
+
+cells_il2 = cells_il2.loc[cells_il2.species == "CD4_all"]
+cells_timer = cells_timer.loc[cells_timer.species == "CD4_all"]
+
+cells = pd.concat([cells_il2, cells_timer]).reset_index(drop = True)
+
+g = sns.relplot(data = cells, x = "time",y = "value", hue = "name", kind = "line")
+plt.show()
 
 def run_heterogeneity(sim, CV : float, res : int, pnames : list, sname : str, **kwargs):
     cell_list = []
@@ -73,6 +87,6 @@ for CV in CV_list:
     run_heterogeneity(sim_il2, CV, res, pnames, sname, t_eval=t_eval, max_step = np.inf)
     run_heterogeneity(sim_timer, CV, res, pnames, sname, t_eval=t_eval, max_step = np.inf)
 
-    run_heterogeneity(sim_il2, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
-    run_heterogeneity(sim_timer, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
+    #run_heterogeneity(sim_il2, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
+    #run_heterogeneity(sim_timer, CV, res, pnames_large, sname_large, t_eval=t_eval, max_step = np.inf)
 

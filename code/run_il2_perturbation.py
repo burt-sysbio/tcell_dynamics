@@ -11,22 +11,16 @@ from exp import Simulation
 import models as model
 from params_fig2 import d
 import numpy as np
+import matplotlib as mpl
 import pandas as pd
 import seaborn as sns
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-SMALL_SIZE = 8
-MEDIUM_SIZE = 9
-BIGGER_SIZE = 10
+
+plt.style.use("paper_theme_python.mplstyle")
 sns.set_palette("deep")
-plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
-plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 from scipy.interpolate import interp1d
 
 d = dict(d)
@@ -44,7 +38,7 @@ def vir_model_const(t):
 # for the cells to return to 0 at the end because they have a high peak
 
 
-res = 30
+res = 50
 arr = np.geomspace(0.1,10,res)
 
 
@@ -84,18 +78,26 @@ mols = pd.concat(mol_list).reset_index(drop = True)
 
 cells = cells.loc[cells.species == "CD4_all"]
 
+
+cmap = "rocket_r"
 g = sns.relplot(data = cells, x = "time", y = "value", hue = "param_value", kind = "line",
-                height = 2.1, legend = False)
-g.set(yscale ="log", ylim = [1, None], ylabel = "cells", xlabel = "time (h)", xticks = [0,20,40,60,80])
+                height = 1.8, legend = False, palette = cmap, hue_norm = mpl.colors.LogNorm())
+g.set(yscale ="log", ylim = [1, None], ylabel = "cells", xlabel = "time (h)", xticks = [0,20,40,60,80],
+      xlim = [0,80])
 sns.despine(top = False, right = False)
+
+
+sm = plt.cm.ScalarMappable(cmap=cmap, norm= mpl.colors.LogNorm(vmin=arr.min(), vmax=arr.max()))
+plt.colorbar(sm)
 plt.show()
 
 g.savefig("../figures/supplements/cells_il2_perturbation.pdf")
 g.savefig("../figures/supplements/cells_il2_perturbation.svg")
 
 g = sns.relplot(data = mols, x = "time", y = "value", hue = "param_value",
-                col = "species", facet_kws = {"sharey" : False}, kind = "line", height = 2.1)
-g.set(xlabel = "time (h)", ylabel = "conc.", xticks = [0,20,40,60,80])
+                col = "species", facet_kws = {"sharey" : False}, kind = "line", height = 1.8,
+                palette = cmap, hue_norm = mpl.colors.LogNorm(), aspect = 0.9)
+g.set(xlabel = "time (h)", ylabel = "conc.", xticks = [0,20,40,60,80], xlim = [0,80])
 sns.despine(top = False, right = False)
 plt.show()
 
