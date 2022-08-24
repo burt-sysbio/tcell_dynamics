@@ -4,12 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-import sys
-sys.path.append("../../modules/")
-sys.path.append("../../models/")
-
-from src.modules.pl import plot_heatmap
-
+from pl import plot_heatmap
+plt.style.use("paper_theme_python.mplstyle")
 ############################################
 ############################################
 ############################################
@@ -53,8 +49,9 @@ for readout, levels in zip(readouts, contour_levels):
     fig, z = plot_heatmap(df, value_col=myvalue, readout=readout, log_color=False,
                        vmin=vmin, vmax=vmax, cmap=cmap,
                        log_axes=True, xlabel=xlabel, ylabel=ylabel, title=title, contour_levels = None,
-                          figsize= (6,4.8))
+                          figsize= (2.2,1.8))
     plt.show()
+
     savename = "heatmap_timer_il2_" + readout
-    savedir = "../final_figures_new/heatmaps/"
+    savedir = "../figures/supplements/"
     fig.savefig(savedir + savename + ".svg")
