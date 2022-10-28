@@ -29,7 +29,7 @@ d = {
     "rate_il2": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
     "rate_il2_restim": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
     "deg_myc": 0.37,
-    "deg_il2_restim" : 6,
+    "deg_il2_restim" : 2.0,
     "K_il2_cons": 7.5, #*N_A*20e-6*10e-12,
     "K_il2" : 5,
     "K_myc": 0.1,
@@ -161,9 +161,6 @@ g.set(xlim= (0,None), yscale = "log", ylim = [1,None], xlabel = "time (d)")
 sns.despine(top=False, right=False)
 plt.show()
 
-g.savefig("ensemble_stimulation_timecourse_2.pdf")
-g.savefig("ensemble_stimulation_timecourse_2.svg")
-
 
 g = sns.relplot(data = df_mols, x = "time",y = "value", col = "variable", facet_kws = {"sharey" : False},
                 kind = "line", hue = "name", height = 1.8)
@@ -185,7 +182,7 @@ else:
     repeats = 1
     dur_arr = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-for mu in [[0.01],[0.05],[0.1]]:
+for mu in [[0.1]]:
     repeats = 30
     cells, mols = run_stimulations(mu, repeats = repeats, stimulation_type= stimulation_type, end_runtime= 120)
 #g = sns.relplot(data = cells, x = "time",y = "cells", kind = "line",
