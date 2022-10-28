@@ -58,6 +58,7 @@ class Simulation:
         self.name = name
         self.mode = mode
         self.parameters = dict(parameters)
+        self.default_params = dict(parameters)
         self.time = None
         self.core = core
         self.state = None
@@ -148,13 +149,12 @@ class Simulation:
                 # set myc for new restim
                 y0 = np.concatenate((y0, [il2_global]))
 
-            time = np.arange(tstart, tend, 0.01)
+            time = np.arange(tstart, tend+0.01, 0.01)
             state = odeint(model.repeated_stimulation, y0, time, args=(mode, params, core, n_stim))
             out.append(state[:-1,:])
             y0 = state[-1,:]
 
             # for new initial conditions, reset timer and add initial cell population
-
             t_arr.append(time[:-1])
 
         state = np.vstack(out)
@@ -348,7 +348,12 @@ class Simulation:
             
         return df
     
-    
+    def reset_params(self):
+        """
+        reset parameters to default state
+        """
+        self.parameters = dict(self.default_params)
+
     def norm(self, val, pname, norm):
         """
         optimization function

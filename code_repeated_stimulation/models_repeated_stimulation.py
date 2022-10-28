@@ -14,7 +14,38 @@ def th_cell_diff(th_state, time, model, d, core, il2_global):
     dt_state = th_cell_core(th_state, rate_death, beta_p, d, core, time)
 
     return dt_state
+def generate_poisson_process(mu, num_events):
+    time_intervals = -np.log(np.random.random(num_events)) / mu
+    total_events = time_intervals.cumsum()
 
+    return total_events
+
+def spiketrain(mu):
+    n_events = 1000
+    res = 1000
+
+    event_times = generate_poisson_process(mu, n_events)
+    yarr = np.zeros(res)
+    xarr = np.linspace(0, event_times[0], res)
+    for i in range(len(event_times)-1):
+        x = np.linspace(event_times[i], event_times[i+1], res)
+        y = (x-x[0])**20 * np.exp(-10*(x-x[0]))
+        y = stepfun(x, hi = 1, lo = 0, start = x[0], end = x[0]+0.5)
+        xarr = np.concatenate((xarr, x))
+        yarr = np.concatenate((yarr, y))
+
+    f = interp1d(xarr, yarr)
+
+    return f
+
+def stepfun(x, hi, lo, start, end, s=10):
+    assert start <= end
+    assert hi >= lo
+    """
+    nice step fun that return value "hi" is start<x<end, else "lo"
+    """
+    out = 0.5 * (hi+lo + (hi-lo) * np.tanh((x-start)*s) * np.tanh((end-x)*s))
+    return out
 
 def repeated_stimulation(state, time, model, d, core, n_stim):
 
@@ -38,13 +69,16 @@ def repeated_stimulation(state, time, model, d, core, n_stim):
     myc_arr = [x[-2] for x in state_split]
     # compute contributions of individual restimulated populations to IL2 secretion
     teff_restim = np.sum([x*y*d["rate_il2_restim"] for x, y in zip(teff_arr, myc_arr)])
-
+    print(teff_restim)
+    print(d["K_il2_cons"])
+    teff_restim_saturated = teff_restim / (teff_restim + d["K_il2_cons"])
+    print(teff_restim_saturated)
     # if I include tnaive in the IL2 production for repeated stimulation
     # it fails because naive cells are already initialized in the beginning
     dt_il2 = d["rate_il2"] * (tint+tnaive) - \
              d["up_il2"] * (tint+teff) * (il2_global**1/(il2_global**1+d["K_il2_cons"]**1)) - \
              d["deg_il2"] * il2_global + \
-             teff_restim
+             teff_restim_saturated # now the restimulation effect is also saturated
     il2_effective = il2_global * (1e12 / (20e-6 * N_A))
     # compute time changes but only for array where start time is reached, otherwise say zero change
     for i in range(n_stim):
@@ -165,24 +199,6 @@ def get_cell_states(th_state, d):
     teff = np.sum(teff)    
     
     return tnaive, tint, teff
-
-
-# def get_cyto_producers(th_state, d):
-#
-#     tnaive, tint, teff = get_cell_states(th_state, d)
-#     # for naive --> teff model do
-#     #il2_producers = tnaive
-#     #il2_consumers = teff
-#
-#     il2_producers = (tnaive+tint) if (tnaive+tint) > 0 else 1e-12
-#     il2_consumers = tint+teff if tint+teff > 0 else 1e-12
-#     il7_consumers = teff if teff > 0 else 1e-12
-#
-#     arr = np.asarray([il2_producers, il2_consumers, il7_consumers]) > 0
-#     assert  arr.all()
-#
-#     return il2_producers, il2_consumers, il7_consumers
-
 
 def menten(conc, vmax, K, hill):   
     # make sure to avoid numeric errors for menten
