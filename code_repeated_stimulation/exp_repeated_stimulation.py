@@ -170,7 +170,7 @@ class Simulation:
 
         # reset the IL2 from individual simulations (IL2 external, not used atm)
         # with global IL2
-        molecules[:,0] = il2 * (1e12 / (20e-6*N_A)) # now also incorporates IL2 from individual populations
+        molecules[:,0] = il2 # * (1e12 / (20e-6*N_A)) # now also incorporates IL2 from individual populations
 
         self.state_raw = cells
         self.molecules = molecules

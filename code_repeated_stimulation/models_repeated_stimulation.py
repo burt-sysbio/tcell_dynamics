@@ -69,17 +69,16 @@ def repeated_stimulation(state, time, model, d, core, n_stim):
     myc_arr = [x[-2] for x in state_split]
     # compute contributions of individual restimulated populations to IL2 secretion
     teff_restim = np.sum([x*y*d["rate_il2_restim"] for x, y in zip(teff_arr, myc_arr)])
-    print(teff_restim)
-    print(d["K_il2_cons"])
-    teff_restim_saturated = teff_restim / (teff_restim + d["K_il2_cons"])
-    print(teff_restim_saturated)
+
+    #teff_restim = teff_restim / (teff_restim + d["K_il2_cons"])
+
     # if I include tnaive in the IL2 production for repeated stimulation
     # it fails because naive cells are already initialized in the beginning
     dt_il2 = d["rate_il2"] * (tint+tnaive) - \
              d["up_il2"] * (tint+teff) * (il2_global**1/(il2_global**1+d["K_il2_cons"]**1)) - \
              d["deg_il2"] * il2_global + \
-             teff_restim_saturated # now the restimulation effect is also saturated
-    il2_effective = il2_global * (1e12 / (20e-6 * N_A))
+             teff_restim # now the restimulation effect is also saturated
+    il2_effective = il2_global # * (1e12 / (20e-6 * N_A))
     # compute time changes but only for array where start time is reached, otherwise say zero change
     for i in range(n_stim):
         mystate = state_split[i]

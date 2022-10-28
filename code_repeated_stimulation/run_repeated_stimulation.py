@@ -26,16 +26,16 @@ d = {
     "d_naive": 0,
     "d_eff" : 0.24,
     "n_div": 2,
-    "rate_il2": 300 * 3600 * 24 ,
-    "rate_il2_restim": 300 * 3600 * 24,
+    "rate_il2": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
+    "rate_il2_restim": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
     "deg_myc": 0.37,
     "deg_il2_restim" : 6,
-    "K_il2_cons": 7.5*N_A*20e-6*10e-12,
+    "K_il2_cons": 7.5, #*N_A*20e-6*10e-12,
     "K_il2" : 5,
     "K_myc": 0.1,
     "hill": 3,
     "c_il2_ex": 0,
-    "up_il2": 1 * 3600 * 24,
+    "up_il2": 1 * 3600 * 24 * (1e12 / (20e-6*N_A)),
     "deg_il2" : 0
 }
 
@@ -185,8 +185,8 @@ else:
     repeats = 1
     dur_arr = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-for mu in [[0.1]]:
-    repeats = 10
+for mu in [[0.01],[0.05],[0.1]]:
+    repeats = 30
     cells, mols = run_stimulations(mu, repeats = repeats, stimulation_type= stimulation_type, end_runtime= 120)
 #g = sns.relplot(data = cells, x = "time",y = "cells", kind = "line",
 #                col = "name", hue = "dur", height = 2, palette = "Greys_r")
