@@ -12,8 +12,6 @@ df1 = pd.read_csv("output_repeated_stimulation/repeated_stimulation_0.1_res_50.c
 test = df1.loc[(df1.name == "Timer") & (df1.cells > 1e40)] # filter out that weird timer numerics peak
 df1 = df1.loc[~((df1.name == "Timer") & (df1.ID == 49))].copy()
 
-#rm_dur = [6]
-#df2 = df1.loc[~df1.dur.isin(rm_dur),:]
 
 n_stim = len(df1)
 palette = ["0.3" for _ in range(df1.ID.drop_duplicates().shape[0])]
@@ -101,14 +99,13 @@ ax.set_xlim([0,100])
 plt.tight_layout()
 plt.show()
 
-fig.savefig("repeated_stimulation_combined.pdf")
-fig.savefig("repeated_stimulation_combined.svg")
+fig.savefig("figures_repeated_stimulation/repeated_stimulation_combined.pdf")
+fig.savefig("figures_repeated_stimulation/repeated_stimulation_combined.svg")
 
 
 mydf = df1.loc[df1.time>60]
 mydf2 = mydf.loc[mydf.time<60+1e-2]
 
-#mypal = ["0.7", "0.7", "0.7"]
 PROPS = {
     'boxprops':{'edgecolor':'0.1', 'alpha' : 1},
     'medianprops':{'color':'0.1'},
@@ -124,12 +121,5 @@ g.set_xticklabels(rotation = 90)
 plt.tight_layout()
 plt.show()
 
-g.savefig("repeated_stimulation_boxplot.pdf")
-g.savefig("repeated_stimulation_boxplot.svg")
-
-
-
-#g = sns.relplot(data = df2, x = "time",y = "cells", kind = "line",
- #               col = "name", hue = "ID", height = 2)
-#g.set(xlim= (0,None), yscale = "log", ylim = [1,None])
-#plt.show()
+g.savefig("figures_repeated_stimulation/repeated_stimulation_boxplot.pdf")
+g.savefig("figures_repeated_stimulation/repeated_stimulation_boxplot.svg")

@@ -169,44 +169,8 @@ sns.despine(top=False, right=False)
 plt.show()
 
 
-mu = 0.01
-res = 30
-dur_arr = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-#
-
 stimulation_type = "poisson"
-if stimulation_type == "poisson":
-    dur_arr = [0.1]
-    repeats = 10
-else:
-    repeats = 1
-    dur_arr = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-
 for mu in [[0.1]]:
     repeats = 30
     cells, mols = run_stimulations(mu, repeats = repeats, stimulation_type= stimulation_type, end_runtime= 120)
-#g = sns.relplot(data = cells, x = "time",y = "cells", kind = "line",
-#                col = "name", hue = "dur", height = 2, palette = "Greys_r")
-#g.set(xlim= (0,None), yscale = "log", ylim = [1,None])
-#plt.show()
-
-#cells.to_csv("repeated_stimulation_equal_spacing.csv", index = False)
     cells.to_csv("repeated_stimulation_" + str(mu[0]) + "_" + "res_" + str(repeats) + ".csv", index = False)
-#g = sns.relplot(data = cells, x = "time",y = "cells", kind = "line", hue = "ID",
-#                col = "name", height = 2)
-#g.set(xlim= (0,None), yscale = "log", ylim = [1,None])
-#plt.show()
-
-#plt.show()
-
-#
-# g = sns.relplot(data = mols, x = "time",y = "value", row = "variable", facet_kws = {"sharey" : False},
-#                 kind = "line", hue = "dur", col = "name", height = 2)
-# plt.show()
-#
-# #
-#out = cells.groupby(["dur", "name"])["cells"].agg("max").reset_index()
-#out["freq"] = 1 / out["dur"]
-#g = sns.relplot(data = out, x = "freq", y = "cells", hue = "name", height = 2)
-#g.set(yscale = "log", ylim = [1])
-#plt.show()
