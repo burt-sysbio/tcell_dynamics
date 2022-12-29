@@ -189,3 +189,4 @@ fabric.properties
 # .idea
 
 code_repeated_stimulation/output_repeated_stimulation/*.csv
+code_repeated_stimulation/*.csv
