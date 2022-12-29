@@ -6,52 +6,49 @@ Created on Tue Jan 28 16:14:25 2020
 @author: burt
 """
 
-from exp_repeated_stimulation import Simulation, SimList, make_sim_list
+from exp_repeated_stimulation import Simulation
 import models_repeated_stimulation as model
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-plt.style.use("paper_theme_python.mplstyle")
+plt.style.use("../paper_theme_python.mplstyle")
 sns.set_palette("deep")
 from scipy.constants import N_A
+
+SEC_TO_DAYS = 60*60*24
+MOLECULES_TO_MOLAR = (1e12 / (20e-6*N_A)) # converting to picomolar assuming lymph node volume of 20µl
+IL2_SECRETION = 150
+
 d = {
     "b": 0,
     "initial_cells": 1.0,
-    "alpha": 4,
-    "beta": 2.,
-    "alpha_p": 2,
-    "beta_p": 4.5,
+    "alpha": 4, # Polonsky 2018
+    "beta": 2., # Polonsky 2018
+    "alpha_p": 2,# Polonsky 2018
+    "beta_p": 4.5,# Polonsky 2018
     "d_prec": 0,
     "d_naive": 0,
-    "d_eff" : 0.24,
+    "d_eff" : 0.24, # Zaretsky 2012
     "n_div": 2,
-    "rate_il2": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
-    "rate_il2_restim": 300 * 3600 * 24 * (1e12 / (20e-6*N_A)),
+    "rate_il2": IL2_SECRETION * SEC_TO_DAYS * MOLECULES_TO_MOLAR, # see Huang et al 2013
+    "rate_il2_restim": IL2_SECRETION * SEC_TO_DAYS * MOLECULES_TO_MOLAR, # Huang et al 2013
     "deg_myc": 0.37,
-    "deg_il2_restim" : 2.0,
+    "deg_il2_restim" : 2.0, # helmstetter 2015
     "K_il2_cons": 7.5, #*N_A*20e-6*10e-12,
     "K_il2" : 5,
     "K_myc": 0.1,
     "hill": 3,
     "c_il2_ex": 0,
-    "up_il2": 1 * 3600 * 24 * (1e12 / (20e-6*N_A)),
+    "up_il2": 1 * SEC_TO_DAYS * MOLECULES_TO_MOLAR,
     "deg_il2" : 0
 }
 
+# Huang,..., Davis (Immunity 2013): IL2 secretion rates are between 1e3 and 5e4 molecules per minute --> 16-830 molecules per cell per second
+# Altan-Bonnet review 2019: uptake is restricted to 1 molecule per cell per second
+# IL2 secretion after restimulation + withdrawal of stimulus lasts around 8 hours --> IFNg Helmstetter,..., Löhning Immunity 2015
 
-# for carrying capacacity I need a long long timecourse
-# because the peak comes so late
-
-# for timer and IL2 timecourse needs to be a bit longer
-# for the cells to return to 0 at the end because they have a high peak
-def gen_start_times(dur, res = 1000, end_runtime = 100, end_stimulation = 20):
-    start_times = [(i * dur, (i + 1.0) * dur) for i in range(res)]
-    start_times = [(x, y) for x, y in start_times if y <= end_stimulation]
-    assert len(start_times) > 0
-    start_times.append((start_times[-1][1], end_runtime))
-
-    return start_times
+# if in doubt, use long simulation times so that cell numbers return to zero
 
 def generate_poisson_process(mu, num_events):
     """
@@ -76,8 +73,7 @@ def gen_poisson_start_times(mu, end_runtime=120):
     b = np.round(b,2)
     return b
 
-def run_stimulations(arr, end_runtime = 120,
-                     repeats = 1, stimulation_type = "poisson"):
+def run_stimulations(arr, end_runtime = 120, repeats = 1):
     """
     generates start times for restimulation based either on periodic restimulation
     or random restimulation based on poisson process
@@ -90,25 +86,19 @@ def run_stimulations(arr, end_runtime = 120,
     for val in arr:
         for i in range(repeats):
 
-            # generate appropriate start times for each repeat
-            if stimulation_type == "poisson":
-                start_times = gen_poisson_start_times(val, end_runtime)
-            else:
-                assert stimulation_type == "equal_spacing"
-                assert repeats == 1
-                start_times = gen_start_times(val, res = 1000, end_runtime = end_runtime, end_stimulation = 30)
+            start_times = gen_poisson_start_times(val, end_runtime)
 
             print("running simulation " + str(i))
             print(start_times)
 
             sim1 = Simulation(name="IL2", mode=model.il2_menten_prolif, parameters=d,
-                              core=model.diff_effector, start_times = start_times)
+                              start_times = start_times)
 
             sim2 = Simulation(name="Timer", mode=model.timer_menten_prolif, parameters=d,
-                              core=model.diff_effector, start_times = start_times)
+                              start_times = start_times)
 
             sim3 = Simulation(name="Mixed", mode=model.timer_il2_menten, parameters=d,
-                              core=model.diff_effector, start_times = start_times)
+                              start_times = start_times)
 
             #check that model output is similar by adjusting model specific parameters then plot
             df1 = sim1.run_timecourse()
@@ -133,13 +123,13 @@ def run_stimulations(arr, end_runtime = 120,
 start_times = [(0,5),(5,10),(10,50),(50,51),(51,52),(52,53),(54,55), (55,56), (56,57)]
 start_times = [(0,20),(20,60)]
 sim1 = Simulation(name="IL2", mode=model.il2_menten_prolif, parameters=d,
-                  core=model.diff_effector, start_times=start_times)
+                  start_times=start_times)
 
 sim2 = Simulation(name="Timer", mode=model.timer_menten_prolif, parameters=d,
-                  core=model.diff_effector, start_times=start_times)
+                  start_times=start_times)
 
 sim3 = Simulation(name="Mixed", mode=model.timer_il2_menten, parameters=d,
-                  core=model.diff_effector, start_times=start_times)
+                  start_times=start_times)
 
 
 df_list = []
@@ -168,9 +158,7 @@ g.set(xlabel = "time (d)", yscale = "log", ylim = [0.1,10])
 sns.despine(top=False, right=False)
 plt.show()
 
-
-stimulation_type = "poisson"
 for mu in [[0.1]]:
     repeats = 30
-    cells, mols = run_stimulations(mu, repeats = repeats, stimulation_type= stimulation_type, end_runtime= 120)
+    cells, mols = run_stimulations(mu, repeats = repeats, end_runtime= 120)
     cells.to_csv("repeated_stimulation_" + str(mu[0]) + "_" + "res_" + str(repeats) + ".csv", index = False)
